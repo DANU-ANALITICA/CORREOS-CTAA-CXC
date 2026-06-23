@@ -27,19 +27,39 @@ PASSWORD = os.environ.get("PASSWORD", "")
 ###RECEPTOR = os.environ.get("RECEPTOR", "")
 
 client = bigquery.Client(project=PROJECT_ID)
-# query = '''SELECT DISTINCT Proveedor, Nombre,
-# COALESCE(
-#   NULLIF(Email1, ''),
-#   NULLIF(Email2, ''),
-#   NULLIF(Email3, '')
-# ) AS Email FROM `finsadashboard.raw_data.Proveedores`
-# WHERE COALESCE(
-#   NULLIF(Email1, ''),
-#   NULLIF(Email2, ''),
-#   NULLIF(Email3, '')
-# )  is not NULL'''
 
-query = '''SELECT DISTINCT Proveedor, Nombre,
-'daniel.perez@danuanalitica.com' AS Email 
-FROM `finsadashboard.raw_data.Proveedores` LIMIT 3
-'''
+
+# ─── BIGQUERY ─────────────────────────────────────────────────────────────────
+def get_backorder_mty(provider_name: str ) -> pd.DataFrame:
+    """
+    Retrieves backorder records from BigQuery for a specific client.
+    """
+    
+    query = """
+       SELECT
+    referencia AS referencia,
+     clave_cliente,
+    count(*) as num_facturas,
+    COUNTIF(status_comprobante = 'PENDIENTE')  AS GASTOS_PENDIENTES_POR_FACTURAR,
+    COUNTIF(status_comprobante = 'FACTURADO')  AS GASTOS_FACTURADOS
+  FROM
+    ctaa-460716.intermediate.int_facturacion_inventario_pendientes
+    GROUP BY 
+    1,
+    2
+    """
+    
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("provider_name", "STRING", provider_name)
+        ]
+    )
+    
+    df = client.query(query, job_config=job_config).to_dataframe()
+    return df
+
+
+if __name__ == "__main__":
+    df = get_backorder_mty("test")
+    print(df.head())
+    print(f"Filas: {len(df)}")
