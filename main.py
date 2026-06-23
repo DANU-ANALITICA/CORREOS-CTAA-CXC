@@ -26,6 +26,7 @@ def get_correos_clientes() -> pd.DataFrame:
         nombre_cliente,
         "lucia.balli@danuanalitica.com" AS email_cliente
     FROM ctaa-460716.raw_data.clientes_correo
+    where nombre_cliente = 'FANUC MEXICO'
     """
     return client.query(query).to_dataframe()
 
