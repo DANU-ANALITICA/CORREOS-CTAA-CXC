@@ -1,0 +1,11 @@
+google-cloud-bigquery
+google-cloud-storage
+google-cloud-bigquery-storage
+pandas
+openpyxl
+db-dtypes
+regex
+pyarrow
+playwright
+python-dotenv
+
